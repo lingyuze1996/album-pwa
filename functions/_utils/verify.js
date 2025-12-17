@@ -20,5 +20,6 @@ export async function verifyToken(token, env, tokenUse = 'id') {
   }
 
   // verify throws if invalid
-  return verifier.verify(token);
+  const payload = await verifier.verify(token);
+  return payload['cognito:username'];
 }

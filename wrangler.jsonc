@@ -12,7 +12,7 @@
   },
   "r2_buckets": [
     {
-      "binding": "MY_BUCKET",
+      "binding": "R2",
       "bucket_name": "piggy-family"
     }
   ],
@@ -20,7 +20,14 @@
     "COGNITO_USER_POOL_ID": "ap-southeast-2_8wQY7je7w",
     "COGNITO_CLIENT_ID": "167mflnhlhg0oeim763iks53ec",
     "COGNITO_REGION": "ap-southeast-2"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "piggy_family",
+      "database_id": "39a10b3c-ae5c-4f3e-9096-c6657eb04a62"
+    }
+  ]
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

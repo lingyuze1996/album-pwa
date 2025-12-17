@@ -1,16 +1,23 @@
-import { verifyToken } from '../_shared/verify.js';
+import { verifyToken } from '../_utils/verify.js';
+import { getMetadata } from '../_utils/db.js';
 
 export const onRequest = async ({ request, env }) => {
   try {
     const auth = request.headers.get('Authorization');
     const token = auth ? auth.split(' ')[1] : null;
-    await verifyToken(token, env);
+    const username = await verifyToken(token, env);
 
     const url = new URL(request.url);
     const key = url.searchParams.get('key');
     if (!key) return new Response('Missing key param', { status: 400 });
 
-    const obj = await env.MY_BUCKET.get(key);
+    // Ensure the authenticated user owns the object
+    const meta = await getMetadata(env, key);
+    if (!meta) return new Response('Not found', { status: 404 });
+    if (meta.uploadedBy !== username)
+      return new Response('Forbidden', { status: 403 });
+
+    const obj = await env.R2.get(key);
     if (!obj) return new Response('Not found', { status: 404 });
 
     const headers = new Headers();

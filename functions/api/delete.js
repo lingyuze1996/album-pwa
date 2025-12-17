@@ -1,4 +1,5 @@
-import { verifyToken } from '../_shared/verify.js';
+import { verifyToken } from '../_utils/verify.js';
+import { deleteMetadata } from '../_utils/db.js';
 
 export const onRequest = async ({ request, env }) => {
   try {
@@ -10,7 +11,12 @@ export const onRequest = async ({ request, env }) => {
     const key = url.searchParams.get('key');
     if (!key) return new Response('Missing key param', { status: 400 });
 
-    await env.MY_BUCKET.delete(key);
+    await env.R2.delete(key);
+    try {
+      await deleteMetadata(env, key);
+    } catch (e) {
+      // ignore DB errors
+    }
     return new Response(JSON.stringify({ deleted: key }), {
       headers: { 'Content-Type': 'application/json' },
     });
