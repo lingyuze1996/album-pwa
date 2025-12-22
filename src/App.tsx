@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { uploadFile, listObjects, getObjectUrl, deleteObject } from './api';
+import {
+  uploadFile,
+  listObjects,
+  getObjectUrl,
+  deleteObject,
+} from './actions/api';
 
 type Obj = {
   key: string;
@@ -16,6 +21,7 @@ function App() {
   const refresh = async () => {
     try {
       const list = await listObjects();
+      console.log(list);
       setFiles(list);
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -24,6 +30,7 @@ function App() {
   };
 
   useEffect(() => {
+    console.log('Refreshing file list...');
     refresh();
   }, []);
 

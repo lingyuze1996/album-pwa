@@ -13,7 +13,19 @@ export async function uploadFile(file: File) {
   const fd = new FormData();
   fd.append('file', file, file.name);
   const headers = await authHeader();
-  const res = await fetch('/api/upload', { method: 'POST', body: fd, headers });
+
+  const metadata = {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    lastModified: file.lastModified,
+  };
+
+  const res = await fetch('/api/upload/init', {
+    method: 'POST',
+    body: JSON.stringify(metadata),
+    headers,
+  });
   if (!res.ok) throw new Error('Upload failed');
   return res.json();
 }
