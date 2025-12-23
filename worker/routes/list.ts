@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { User } from '../types/user';
+import type { User } from '../../types/user';
 import { list as listMetadataByUser } from '../services/database';
 
 const list = new Hono<{

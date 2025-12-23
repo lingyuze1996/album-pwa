@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import type { Metadata } from '../types/metadata';
 import {
   uploadFile,
   listObjects,
   getObjectUrl,
   deleteObject,
 } from './actions/api';
-
-type Obj = {
-  key: string;
-  size?: number;
-  httpMetadata?: { contentType?: string };
-};
+import { getThumbnailUrl } from './utils/assetsUrlMapper';
 
 function App() {
-  const [files, setFiles] = useState<Obj[]>([]);
+  const [files, setFiles] = useState<Metadata[]>([]);
   const [selected, setSelected] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -63,13 +59,13 @@ function App() {
   return (
     <div className="app-root">
       <header>
-        <h1>Ruby Album</h1>
+        <h1>Album PWA</h1>
       </header>
 
       <section className="upload">
         <input
           type="file"
-          accept="image/*,video/*"
+          accept="image/*"
           onChange={(e) =>
             setSelected(e.target.files ? e.target.files[0] : null)
           }
@@ -84,36 +80,32 @@ function App() {
         {files.length === 0 && <p>No media yet.</p>}
         <ul>
           {files.map((f) => (
-            <li key={f.key}>
+            <li key={f.id}>
               <div className="media-item">
-                {f.httpMetadata?.contentType?.startsWith('image') ? (
+                {f.type.startsWith('image') ? (
                   <img
-                    src={getObjectUrl(f.key)}
-                    alt={f.key}
+                    src={getThumbnailUrl(f.id)}
+                    alt={f.id}
                     className="thumb"
                   />
-                ) : f.httpMetadata?.contentType?.startsWith('video') ? (
-                  <video src={getObjectUrl(f.key)} controls className="thumb" />
                 ) : (
-                  <a
-                    href={getObjectUrl(f.key)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {f.key}
+                  // ) : f.httpMetadata?.contentType?.startsWith('video') ? (
+                  //   <video src={getObjectUrl(f.id)} controls className="thumb" />
+                  <a href={getObjectUrl(f.id)} target="_blank" rel="noreferrer">
+                    {f.id}
                   </a>
                 )}
                 <div className="meta">
-                  <div className="key">{f.key}</div>
+                  <div className="key">{f.id}</div>
                   <div className="actions">
                     <button
                       onClick={() =>
-                        (window.location.href = getObjectUrl(f.key))
+                        (window.location.href = getObjectUrl(f.id))
                       }
                     >
                       Open
                     </button>
-                    <button onClick={() => handleDelete(f.key)}>Delete</button>
+                    <button onClick={() => handleDelete(f.id)}>Delete</button>
                   </div>
                 </div>
               </div>
