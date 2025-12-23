@@ -1,5 +1,5 @@
 export interface Metadata {
-  key: string;
+  id: string;
   name: string;
   size: number;
   type: string;

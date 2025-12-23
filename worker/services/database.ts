@@ -1,12 +1,12 @@
 // let initialized = false;
 
-import type { Metadata } from '../types/metadata';
+import type { Metadata } from '../../types/metadata';
 
 async function ensureInit(env: Env) {
   console.log('Initializing D1 database schema...');
   // const drop = `DROP TABLE IF EXISTS media`;
   const create = `CREATE TABLE IF NOT EXISTS media (
-    key TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     name TEXT,
     size INTEGER,
     type TEXT,
@@ -21,7 +21,7 @@ async function ensureInit(env: Env) {
 
 export async function insert(env: Env, row: Metadata) {
   const {
-    key,
+    id,
     name,
     size,
     type,
@@ -29,10 +29,10 @@ export async function insert(env: Env, row: Metadata) {
     createdAt = Date.now(),
     lastModifiedAt = null,
   } = row;
-  const stmt = `INSERT OR REPLACE INTO media (key, name, size, type, createdBy, createdAt, lastModifiedAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const stmt = `INSERT OR REPLACE INTO media (id, name, size, type, createdBy, createdAt, lastModifiedAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
   await env.D1.prepare(stmt)
     .bind(
-      key,
+      id,
       name,
       size,
       type,
@@ -42,6 +42,11 @@ export async function insert(env: Env, row: Metadata) {
       'pending'
     )
     .run();
+}
+
+export async function update(env: Env, id: string, key: string, value: any) {
+  const stmt = `UPDATE media SET ${key} = ? WHERE id = ?`;
+  await env.D1.prepare(stmt).bind(value, id).run();
 }
 
 // export async function deleteMetadata(env, key) {

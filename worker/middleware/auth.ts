@@ -2,7 +2,7 @@ import { createMiddleware } from 'hono/factory';
 import { getJWKs } from '../utils/jwks';
 import { verifyWithJwks } from 'hono/jwt';
 import { HTTPException } from 'hono/http-exception';
-import type { User } from '../types/user';
+import type { User } from '../../types/user';
 
 export const cognitoAuth = createMiddleware<{
   Bindings: Env;

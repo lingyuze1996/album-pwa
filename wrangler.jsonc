@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "album-pwa",
   "compatibility_date": "2025-11-28",
+  "compatibility_flags": ["nodejs_compat"],
   "main": "./worker/index.ts",
   "assets": {
     "directory": "./dist/",
@@ -18,7 +19,7 @@
   "r2_buckets": [
     {
       "binding": "R2",
-      "bucket_name": "piggy-family"
+      "bucket_name": "album-pwa"
     }
   ],
   "d1_databases": [
