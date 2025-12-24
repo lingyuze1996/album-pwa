@@ -25,8 +25,8 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_name": "piggy_family",
-      "database_id": "39a10b3c-ae5c-4f3e-9096-c6657eb04a62"
+      "database_name": "album-pwa",
+      "database_id": "3c9083c1-6537-4fe1-839f-290b32fb0083"
     }
   ]
 }

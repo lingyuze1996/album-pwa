@@ -10,9 +10,10 @@ async function authHeader() {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function uploadFile(file: File) {
-  const headers = await authHeader();
-
+const uploadSingleFile = async (
+  file: File,
+  headers: Record<string, string>
+) => {
   const metadata = {
     name: file.name,
     size: file.size,
@@ -44,6 +45,14 @@ export async function uploadFile(file: File) {
     headers,
   });
   return complete.json();
+};
+
+export async function uploadFiles(files: FileList) {
+  const headers = await authHeader();
+
+  await Promise.all(
+    Array.from(files).map((file) => uploadSingleFile(file, headers))
+  );
 }
 
 export async function listObjects() {

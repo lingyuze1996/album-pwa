@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import type { Metadata } from '../types/metadata';
-import {
-  uploadFile,
-  listObjects,
-  getObjectUrl,
-  deleteObject,
-} from './actions/api';
-import { getThumbnailUrl } from './utils/assetsUrlMapper';
+import { uploadFiles, listObjects } from './actions/api';
+import { getOriginalUrl, getThumbnailUrl } from './utils/assetsUrlMapper';
 
 function App() {
   const [files, setFiles] = useState<Metadata[]>([]);
-  const [selected, setSelected] = useState<File | null>(null);
+  const [selected, setSelected] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
 
   const refresh = async () => {
@@ -34,7 +29,7 @@ function App() {
     if (!selected) return;
     setLoading(true);
     try {
-      await uploadFile(selected);
+      await uploadFiles(selected);
       setSelected(null);
       await refresh();
     } catch (e) {
@@ -45,16 +40,16 @@ function App() {
     }
   };
 
-  const handleDelete = async (key: string) => {
-    if (!confirm('Delete ' + key + '?')) return;
-    try {
-      await deleteObject(key);
-      await refresh();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Delete error', e);
-    }
-  };
+  // const handleDelete = async (key: string) => {
+  //   if (!confirm('Delete ' + key + '?')) return;
+  //   try {
+  //     await deleteObject(key);
+  //     await refresh();
+  //   } catch (e) {
+  //     // eslint-disable-next-line no-console
+  //     console.error('Delete error', e);
+  //   }
+  // };
 
   return (
     <div className="app-root">
@@ -65,10 +60,9 @@ function App() {
       <section className="upload">
         <input
           type="file"
+          multiple
           accept="image/*"
-          onChange={(e) =>
-            setSelected(e.target.files ? e.target.files[0] : null)
-          }
+          onChange={(e) => setSelected(e.target.files)}
         />
         <button onClick={handleUpload} disabled={!selected || loading}>
           {loading ? 'Uploading...' : 'Upload'}
@@ -91,21 +85,25 @@ function App() {
                 ) : (
                   // ) : f.httpMetadata?.contentType?.startsWith('video') ? (
                   //   <video src={getObjectUrl(f.id)} controls className="thumb" />
-                  <a href={getObjectUrl(f.id)} target="_blank" rel="noreferrer">
+                  <a
+                    href={getOriginalUrl(f.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     {f.id}
                   </a>
                 )}
                 <div className="meta">
-                  <div className="key">{f.id}</div>
+                  <div className="key">{f.name}</div>
                   <div className="actions">
                     <button
                       onClick={() =>
-                        (window.location.href = getObjectUrl(f.id))
+                        window.open(getOriginalUrl(f.id), '_blank')
                       }
                     >
                       Open
                     </button>
-                    <button onClick={() => handleDelete(f.id)}>Delete</button>
+                    {/* <button onClick={() => handleDelete(f.id)}>Delete</button> */}
                   </div>
                 </div>
               </div>
