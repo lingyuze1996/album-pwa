@@ -53,6 +53,8 @@ export async function uploadFiles(files: FileList) {
   await Promise.all(
     Array.from(files).map((file) => uploadSingleFile(file, headers))
   );
+
+  alert('Upload completed successfully!');
 }
 
 export async function listObjects() {

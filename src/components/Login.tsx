@@ -9,7 +9,10 @@ type Props = {
 
 export default function LoginWrapper({ children }: Props) {
   return (
-    <Authenticator>
+    <Authenticator
+      signUpAttributes={['email', 'phone_number']}
+      loginMechanisms={['username', 'email']}
+    >
       {({ signOut, user }) => (
         <div>
           <div
