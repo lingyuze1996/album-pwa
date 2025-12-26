@@ -7,7 +7,7 @@ async function ensureInit(env: Env) {
   // const drop = `DROP TABLE IF EXISTS media`;
   const create = `CREATE TABLE IF NOT EXISTS media (
     id TEXT PRIMARY KEY,
-    name TEXT,
+    name TEXT UNIQUE,
     size INTEGER,
     type TEXT,
     createdBy TEXT,
@@ -29,7 +29,7 @@ export async function insert(env: Env, row: Metadata) {
     createdAt = Date.now(),
     lastModifiedAt = null,
   } = row;
-  const stmt = `INSERT OR REPLACE INTO media (id, name, size, type, createdBy, createdAt, lastModifiedAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const stmt = `INSERT INTO media (id, name, size, type, createdBy, createdAt, lastModifiedAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
   await env.D1.prepare(stmt)
     .bind(
       id,
@@ -54,15 +54,33 @@ export async function update(env: Env, id: string, key: string, value: any) {
 //   await env.D1.prepare('DELETE FROM media WHERE key = ?').bind(key).run();
 // }
 
-export async function list(env: Env, username: string) {
+export async function list(
+  env: Env,
+  username: string,
+  page: number = 1,
+  pageSize: number = 20
+) {
   await ensureInit(env);
 
-  const res = await env.D1.prepare(
-    'SELECT * FROM media WHERE createdBy = ? ORDER BY createdAt DESC'
+  // get total count
+  const countRes = await env.D1.prepare(
+    'SELECT COUNT(*) as count FROM media WHERE createdBy = ?'
   )
     .bind(username)
+    .run<{ count: number }>();
+
+  const total = countRes?.results?.[0]?.count ?? 0;
+
+  const offset = Math.max(0, (page - 1) * pageSize);
+
+  const stmt =
+    'SELECT * FROM media WHERE createdBy = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+  const res = await env.D1.prepare(stmt)
+    .bind(username, pageSize, offset)
     .run<Metadata>();
-  return res.results || [];
+  const items = res.results || [];
+
+  return { items, total };
 }
 
 // export async function getMetadata(env, key) {
