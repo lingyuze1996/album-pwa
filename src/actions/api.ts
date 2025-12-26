@@ -31,6 +31,7 @@ const uploadSingleFile = async (
   if (!init.ok) throw new Error('Failed to initiate upload');
 
   const { uploadUrl, id } = await init.json();
+
   // Step 2: Upload the file blob
   await axios.put(uploadUrl, file, {
     headers: {
@@ -50,18 +51,37 @@ const uploadSingleFile = async (
 export async function uploadFiles(files: FileList) {
   const headers = await authHeader();
 
-  await Promise.all(
+  const results = await Promise.allSettled(
     Array.from(files).map((file) => uploadSingleFile(file, headers))
   );
 
-  alert('Upload completed successfully!');
+  const errors = results.filter((res) => res.status === 'rejected');
+  const successes = results.filter((res) => res.status === 'fulfilled');
+
+  alert(
+    `Successful uploads: ${successes.length} files. Failed uploads: ${errors.length} files.`
+  );
 }
 
-export async function listObjects() {
+export async function listObjects(options?: {
+  page?: number;
+  pageSize?: number;
+  cursor?: string;
+}) {
   const headers = await authHeader();
-  const res = await fetch('/api/list', { headers });
+
+  // build query params for paging
+  const params = new URLSearchParams();
+  if (options?.page != null) params.append('page', String(options.page));
+  if (options?.pageSize != null)
+    params.append('pageSize', String(options.pageSize));
+  if (options?.cursor) params.append('cursor', options.cursor);
+
+  const url = `/api/list${params.toString() ? `?${params.toString()}` : ''}`;
+
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error('List failed');
-  return res.json();
+  return res.json(); // expected to return { items: [...], nextCursor?: string, total?: number, ... }
 }
 
 export function getObjectUrl(key: string) {

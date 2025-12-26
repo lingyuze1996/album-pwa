@@ -8,12 +8,17 @@ function App() {
   const [files, setFiles] = useState<Metadata[]>([]);
   const [selected, setSelected] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [pageInput, setPageInput] = useState<string>('1');
+  const [total, setTotal] = useState<number>(0);
 
-  const refresh = async () => {
+  const refresh = async (p = page) => {
     try {
-      const list = await listObjects();
-      console.log(list);
-      setFiles(list);
+      const res = await listObjects({ page: p, pageSize });
+      console.log(res);
+      setFiles(res.items || []);
+      setTotal(res.total || 0);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -22,7 +27,7 @@ function App() {
 
   useEffect(() => {
     console.log('Refreshing file list...');
-    refresh();
+    refresh(1);
   }, []);
 
   const handleUpload = async () => {
@@ -31,7 +36,8 @@ function App() {
     try {
       await uploadFiles(selected);
       setSelected(null);
-      await refresh();
+      setPage(1);
+      await refresh(1);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error('Upload error', e);
@@ -72,6 +78,78 @@ function App() {
       <section className="list">
         <h2>Stored Media</h2>
         {files.length === 0 && <p>No media yet.</p>}
+        <div className="paging">
+          <label style={{ marginRight: 8 }}>
+            Page size:
+            <select
+              value={pageSize}
+              onChange={async (e) => {
+                const ps = Math.max(1, Number(e.target.value) || 1);
+                setPageSize(ps);
+                setPage(1);
+                setPageInput('1');
+                await refresh(1);
+              }}
+              style={{ marginLeft: 6, marginRight: 12 }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </label>
+          <button
+            onClick={async () => {
+              if (page <= 1) return;
+              const np = page - 1;
+              setPage(np);
+              await refresh(np);
+            }}
+            disabled={page <= 1}
+          >
+            Prev
+          </button>
+          <span style={{ margin: '0 12px' }}>
+            Page {page} of {Math.max(1, Math.ceil(total / pageSize))} — {total}{' '}
+            items
+          </span>
+          <label style={{ marginLeft: 8 }}>
+            Go to page:
+            <input
+              type="number"
+              min={1}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              style={{ width: 80, marginLeft: 6 }}
+            />
+          </label>
+          <button
+            onClick={async () => {
+              const totalPages = Math.max(1, Math.ceil(total / pageSize));
+              let np = Math.max(1, Number(pageInput) || 1);
+              if (np > totalPages) np = totalPages;
+              setPage(np);
+              setPageInput(String(np));
+              await refresh(np);
+            }}
+            style={{ marginLeft: 8 }}
+          >
+            Go
+          </button>
+          <button
+            onClick={async () => {
+              const totalPages = Math.max(1, Math.ceil(total / pageSize));
+              if (page >= totalPages) return;
+              const np = page + 1;
+              setPage(np);
+              await refresh(np);
+            }}
+            disabled={page >= Math.max(1, Math.ceil(total / pageSize))}
+          >
+            Next
+          </button>
+        </div>
         <ul>
           {files.map((f) => (
             <li key={f.id}>

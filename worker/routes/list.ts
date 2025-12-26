@@ -12,8 +12,19 @@ const list = new Hono<{
 list.get('/', async (c) => {
   const user = c.get('user');
   const createdBy = user.username;
-  const items = await listMetadataByUser(c.env, createdBy);
-  return c.json(items);
+
+  const qPage = c.req.query('page');
+  const qPageSize = c.req.query('pageSize');
+  const page = qPage ? Math.max(1, Number(qPage) || 1) : 1;
+  const pageSize = qPageSize ? Math.max(1, Number(qPageSize) || 20) : 20;
+
+  const result = await listMetadataByUser(c.env, createdBy, page, pageSize);
+  return c.json({
+    items: result.items,
+    total: result.total,
+    page,
+    pageSize,
+  });
 });
 
 // export const onRequest = async ({ request, env }) => {
